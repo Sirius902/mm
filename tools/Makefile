@@ -15,7 +15,10 @@ IDO_RECOMP_VERSION := v1.2
 IDO_RECOMP_5_3_DIR := ido_recomp/$(DETECTED_OS)/5.3
 IDO_RECOMP_7_1_DIR := ido_recomp/$(DETECTED_OS)/7.1
 
-all: $(PROGRAMS) $(IDO_RECOMP_5_3_DIR) $(IDO_RECOMP_7_1_DIR)
+ifndef NO_CURL
+all: $(IDO_RECOMP_5_3_DIR) $(IDO_RECOMP_7_1_DIR)
+endif
+all: $(PROGRAMS)
 	$(MAKE) -C ZAPD
 	$(MAKE) -C fado
 	$(MAKE) -C buildtools

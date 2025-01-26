@@ -6,7 +6,7 @@
 MAKEFLAGS += --no-builtin-rules
 
 # Ensure the build fails if a piped command fails
-SHELL = /bin/bash
+SHELL = /usr/bin/env bash
 .SHELLFLAGS = -o pipefail -c
 
 # OS Detection
@@ -92,8 +92,11 @@ ifneq ($(shell type $(MIPS_BINUTILS_PREFIX)ld >/dev/null 2>/dev/null; echo $$?),
   $(error Unable to find $(MIPS_BINUTILS_PREFIX)ld. Please install or build MIPS binutils, commonly mips-linux-gnu. (or set MIPS_BINUTILS_PREFIX if your MIPS binutils install uses another prefix))
 endif
 
-CC       := tools/ido_recomp/$(DETECTED_OS)/7.1/cc
-CC_OLD   := tools/ido_recomp/$(DETECTED_OS)/5.3/cc
+CC       := $(CC_IDO)
+CC_OLD   := $(CC_OLD_IDO)
+
+CC       ?= tools/ido_recomp/$(DETECTED_OS)/7.1/cc
+CC_OLD   ?= tools/ido_recomp/$(DETECTED_OS)/5.3/cc
 
 # if ORIG_COMPILER is 1, check that either QEMU_IRIX is set or qemu-irix package installed
 ifeq ($(ORIG_COMPILER),1)
