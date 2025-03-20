@@ -64,6 +64,8 @@ void PlayerCall_Update(Actor* thisx, PlayState* play) {
 #include "string.h"
 
 u8 gWeirdshotFrameData[(128 - 24) * (sizeof(Vec3s) * PLAYER_LIMB_MAX + sizeof(s16))];
+s32 gWeirdshotFrame;
+u32 gWeirdshotSanity;
 
 void SI_ClearWeirdshotData(void) {
     memset(gWeirdshotFrameData, 0xAA, sizeof(gWeirdshotFrameData));
@@ -91,6 +93,12 @@ void SI_DrawWeirdshotFrame(Actor* thisx, PlayState* play) {
 
     GfxPrint_SetPos(&printer, 1, 7);
     GfxPrint_Printf(&printer, "data: 0x%08x", (u32)gWeirdshotFrameData);
+
+    GfxPrint_SetPos(&printer, 1, 8);
+    GfxPrint_Printf(&printer, "frame: %d", gWeirdshotFrame);
+
+    GfxPrint_SetPos(&printer, 1, 9);
+    GfxPrint_Printf(&printer, "sanity: 0x%08x", gWeirdshotSanity);
 
     gfx = GfxPrint_Close(&printer);
 

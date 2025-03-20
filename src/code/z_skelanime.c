@@ -1019,6 +1019,12 @@ AnimTask* AnimTaskQueue_NewTask(AnimTaskQueue* animTaskQueue, AnimTaskType type)
     (SEGMENT_ROM_START(link_animetion) + ((uintptr_t)addr & 0xFFFFFF) + ((u32)offset))
 
 extern u8 gWeirdshotFrameData[(128 - 24) * (sizeof(Vec3s) * PLAYER_LIMB_MAX + sizeof(s16))];
+extern s32 gWeirdshotFrame;
+extern u32 gWeirdshotSanity;
+
+#include "string.h"
+
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
 
 /**
  * Creates a task which will load a single frame of animation data from the link_animetion file.
@@ -1033,8 +1039,25 @@ void AnimTaskQueue_AddLoadPlayerFrame(PlayState* play, PlayerAnimationHeader* an
         PlayerAnimationHeader* playerAnimHeader = Lib_SegmentedToVirtual(animation);
         s32 pad;
 
-        if (frame >= playerAnimHeader->common.frameCount) {
-            frame = 55;
+        // if (frame >= playerAnimHeader->common.frameCount && gWeirdshotFrame < 128 - 24) {
+        if (animation == &gPlayerAnim_link_bow_side_walk && gWeirdshotFrame < 128 - 24) {
+            void* data;
+            void* sanityData;
+
+            data = gWeirdshotFrameData + (sizeof(Vec3s) * limbCount + sizeof(s16)) * gWeirdshotFrame;
+
+            osCreateMesgQueue(&task->data.loadPlayerFrame.msgQueue, task->data.loadPlayerFrame.msg,
+                              ARRAY_COUNT(task->data.loadPlayerFrame.msg));
+            DmaMgr_RequestAsync(
+                &task->data.loadPlayerFrame.req, data,
+                LINK_ANIMETION_OFFSET(playerAnimHeader->linkAnimSegment, (sizeof(Vec3s) * limbCount + sizeof(s16)) * (gWeirdshotFrame + playerAnimHeader->common.frameCount)),
+                sizeof(Vec3s) * limbCount + sizeof(s16), 0, &task->data.loadPlayerFrame.msgQueue, NULL);
+
+            sanityData = gWeirdshotFrameData + (sizeof(Vec3s) * limbCount + sizeof(s16)) * (55 - 24);
+            memcpy(&gWeirdshotSanity, sanityData, sizeof(gWeirdshotSanity));
+
+            gWeirdshotFrame++;
+            return;
         }
 
         osCreateMesgQueue(&task->data.loadPlayerFrame.msgQueue, task->data.loadPlayerFrame.msg,
@@ -1043,13 +1066,6 @@ void AnimTaskQueue_AddLoadPlayerFrame(PlayState* play, PlayerAnimationHeader* an
             &task->data.loadPlayerFrame.req, frameTable,
             LINK_ANIMETION_OFFSET(playerAnimHeader->linkAnimSegment, (sizeof(Vec3s) * limbCount + sizeof(s16)) * frame),
             sizeof(Vec3s) * limbCount + sizeof(s16), 0, &task->data.loadPlayerFrame.msgQueue, NULL);
-
-        if (frame >= playerAnimHeader->common.frameCount) {
-            DmaMgr_RequestSync(
-                gWeirdshotFrameData,
-                LINK_ANIMETION_OFFSET(playerAnimHeader->linkAnimSegment, (sizeof(Vec3s) * limbCount + sizeof(s16)) * 24),
-                sizeof(gWeirdshotFrameData));
-        }
     }
 }
 
