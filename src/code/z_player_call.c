@@ -51,7 +51,48 @@ void PlayerCall_Update(Actor* thisx, PlayState* play) {
     sPlayerCallUpdateFunc(thisx, play);
 }
 
+#include "gfxalloc.h"
+
+u32 gWeirdshotFramesVrom = 0;
+
+void SI_DrawWeirdshotInfo(Actor* thisx, PlayState* play) {
+    Player* this = (Player*)thisx;
+    GfxPrint printer;
+    Gfx* gfxRef;
+    Gfx* gfx;
+
+    OPEN_DISPS(play->state.gfxCtx);
+
+    Gfx_SetupDL28_Opa(play->state.gfxCtx);
+
+    GfxPrint_Init(&printer);
+
+    gfxRef = POLY_OPA_DISP;
+    gfx = Gfx_Open(gfxRef);
+    gSPDisplayList(OVERLAY_DISP++, gfx);
+
+    GfxPrint_Open(&printer, gfx);
+
+    GfxPrint_SetColor(&printer, 255, 255, 255, 255);
+
+    GfxPrint_SetPos(&printer, 1, 7);
+    GfxPrint_Printf(&printer, "vrom: 0x%08x", gWeirdshotFramesVrom);
+
+    gfx = GfxPrint_Close(&printer);
+
+    gSPEndDisplayList(gfx++);
+    Gfx_Close(gfxRef, gfx);
+    POLY_OPA_DISP = gfx;
+
+    GfxPrint_Destroy(&printer);
+
+    CLOSE_DISPS(play->state.gfxCtx);
+}
+
 void PlayerCall_Draw(Actor* thisx, PlayState* play) {
     KaleidoScopeCall_LoadPlayer();
+
+    SI_DrawWeirdshotInfo(thisx, play);
+
     sPlayerCallDrawFunc(thisx, play);
 }

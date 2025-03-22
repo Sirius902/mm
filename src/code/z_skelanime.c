@@ -1018,6 +1018,10 @@ AnimTask* AnimTaskQueue_NewTask(AnimTaskQueue* animTaskQueue, AnimTaskType type)
 #define LINK_ANIMETION_OFFSET(addr, offset) \
     (SEGMENT_ROM_START(link_animetion) + ((uintptr_t)addr & 0xFFFFFF) + ((u32)offset))
 
+#include "assets/objects/gameplay_keep/gameplay_keep.h"
+
+extern u32 gWeirdshotFramesVrom;
+
 /**
  * Creates a task which will load a single frame of animation data from the link_animetion file.
  * The asynchronous DMA request to load the data is made as soon as the task is created.
@@ -1030,6 +1034,10 @@ void AnimTaskQueue_AddLoadPlayerFrame(PlayState* play, PlayerAnimationHeader* an
     if (task != NULL) {
         PlayerAnimationHeader* playerAnimHeader = Lib_SegmentedToVirtual(animation);
         s32 pad;
+
+        if (animation == &gPlayerAnim_link_bow_side_walk) {
+            gWeirdshotFramesVrom = LINK_ANIMETION_OFFSET(playerAnimHeader->linkAnimSegment, (sizeof(Vec3s) * limbCount + sizeof(s16)) * playerAnimHeader->common.frameCount);
+        }
 
         osCreateMesgQueue(&task->data.loadPlayerFrame.msgQueue, task->data.loadPlayerFrame.msg,
                           ARRAY_COUNT(task->data.loadPlayerFrame.msg));
